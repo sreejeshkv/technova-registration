@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technova Registration</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f3f4;
+    }
+    .regn {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Technova Registration</h2>
+
+<form id="form">
+  <input name="name" placeholder="Name" required>
+  <input name="mobile" placeholder="Mobile" required>
+  <input name="email" type="email" placeholder="Email" required>
+  <input name="classYear" placeholder="Class / Year" required>
+  <input name="course" placeholder="Course (optional)">
+  <input name="college" placeholder="College / School" required>
+
+  <select name="event" required>
+    <option value="">Select Event</option>
+    <option value="BioQUEST-Test your Health Wisdom">BioQUEST</option>
+    <option value="BossBattle-Best Manager Contest">BossBattle</option>
+    <option value="CodeCLASH-C Coding Contest">CodeCLASH</option>
+    <!-- add remaining events -->
+  </select>
+
+  <button type="submit">Generate Registration ID</button>
+</form>
+
+<div id="output" class="result" style="display:none;"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
+
+document.getElementById("form").onsubmit = async e => {
+  e.preventDefault();
+
+  const data = Object.fromEntries(new FormData(e.target).entries());
+
+  const res = await fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  const out = await res.json();
+
+  document.getElementById("form").style.display = "none";
+  const div = document.getElementById("output");
+  div.style.display = "block";
+
+  div.innerHTML =
+    "<div><strong>" + out.name + "</strong></div>" +
+    "<div>" + out.event + "</div>" +
+    "<div class='regn'>" + out.regnId + "</div>" +
+    "<div>Show this at the registration desk.</div>";
+};
+</script>
+
+</body>
+</html>
