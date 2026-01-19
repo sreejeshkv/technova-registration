@@ -11,26 +11,56 @@
       margin: auto;
       padding: 20px;
     }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
     input, select, button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
       font-size: 16px;
+      box-sizing: border-box;
     }
+
     button {
       background: #1a73e8;
       color: #fff;
       border: none;
+      cursor: pointer;
     }
+
+    button:disabled {
+      background: #9aa0a6;
+    }
+
+    .loading {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
     .result {
       margin-top: 20px;
       padding: 15px;
       background: #f1f3f4;
+      border-radius: 6px;
+      text-align: center;
     }
+
     .regn {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
       margin-top: 10px;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 15px;
+      text-align: center;
     }
   </style>
 </head>
@@ -40,51 +70,100 @@
 <h2>Technova Registration</h2>
 
 <form id="form">
-  <input name="name" placeholder="Name" required>
-  <input name="mobile" placeholder="Mobile" required>
-  <input name="email" type="email" placeholder="Email" required>
-  <input name="classYear" placeholder="Class / Year" required>
-  <input name="course" placeholder="Course (optional)">
-  <input name="college" placeholder="College / School" required>
+  <input name="name" placeholder="Name of Participant" required>
+  <input name="mobile" placeholder="Mobile Number" required>
+  <input name="email" type="email" placeholder="Email ID" required>
+  <input name="classYear" placeholder="Class / Year of Study" required>
+  <input name="course" placeholder="Course Name (optional)">
+  <input name="college" placeholder="College / School Name" required>
 
   <select name="event" required>
     <option value="">Select Event</option>
-    <option value="BioQUEST-Test your Health Wisdom">BioQUEST</option>
-    <option value="BossBattle-Best Manager Contest">BossBattle</option>
-    <option value="CodeCLASH-C Coding Contest">CodeCLASH</option>
-    <!-- add remaining events -->
+
+    <option value="BioQUEST-Test your Health Wisdom">BioQUEST – Test your Health Wisdom</option>
+    <option value="BossBattle-Best Manager Contest">BossBattle – Best Manager Contest</option>
+    <option value="CodeCLASH-C Coding Contest">CodeCLASH – C Coding Contest</option>
+    <option value="CrackIT-Find a Hidden Key inside a Code">CrackIT – Find a Hidden Key inside a Code</option>
+    <option value="ElectroX-Circuit Making Contest">ElectroX – Circuit Making Contest</option>
+    <option value="IDEATHON-Startup Idea Presentation Contest">IDEATHON – Startup Idea Presentation Contest</option>
+    <option value="PRESENTA-Seminar Contest">PRESENTA – Seminar Contest</option>
+    <option value="PRESSCom-Press Conference Imitation Contest">PRESSCom – Press Conference Imitation Contest</option>
+    <option value="PRAYOGA-The Project Demo Contest">PRAYOGA – The Project Demo Contest</option>
+    <option value="Robo WAR-Robot Demo Contest">Robo WAR – Robot Demo Contest</option>
+    <option value="Sci-WIZ-Science Quiz for School students">Sci-WIZ – Science Quiz for School Students</option>
+    <option value="TATVA-The Quiz Contest">TATVA – The Quiz Contest</option>
+    <option value="Tech-Snap-Short Time Tech Talk for School students">Tech-Snap – Short Time Tech Talk for School Students</option>
+    <option value="TechnoBOTS-Robotic Contest for School students">TechnoBOTS – Robotic Contest for School Students</option>
   </select>
 
-  <button type="submit">Generate Registration ID</button>
+  <button id="submitBtn" type="submit">Generate Registration ID</button>
 </form>
 
+<div id="loading" class="loading" style="display:none;">
+  Generating Registration ID…
+</div>
+
 <div id="output" class="result" style="display:none;"></div>
+<div id="error" class="error" style="display:none;"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
 
-document.getElementById("form").onsubmit = async e => {
+const form = document.getElementById("form");
+const loading = document.getElementById("loading");
+const output = document.getElementById("output");
+const errorBox = document.getElementById("error");
+const submitBtn = document.getElementById("submitBtn");
+
+form.onsubmit = async e => {
   e.preventDefault();
 
-  const data = Object.fromEntries(new FormData(e.target).entries());
+  errorBox.style.display = "none";
+  form.style.display = "none";
+  loading.style.display = "block";
+  submitBtn.disabled = true;
 
-  const res = await fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: { "Content-Type": "application/json" }
-  });
+  const data = Object.fromEntries(new FormData(form).entries());
 
-  const out = await res.json();
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" }
+    });
 
-  document.getElementById("form").style.display = "none";
-  const div = document.getElementById("output");
-  div.style.display = "block";
+    const out = await res.json();
+    loading.style.display = "none";
+    output.style.display = "block";
 
-  div.innerHTML =
-    "<div><strong>" + out.name + "</strong></div>" +
-    "<div>" + out.event + "</div>" +
-    "<div class='regn'>" + out.regnId + "</div>" +
-    "<div>Show this at the registration desk.</div>";
+    if (out.status === "new") {
+      output.innerHTML =
+        "<div><strong>" + out.name + "</strong></div>" +
+        "<div>" + out.event + "</div>" +
+        "<div class='regn'>" + out.regnId + "</div>" +
+        "<div>Please show this Registration ID at the desk.</div>";
+
+    } else if (out.status === "exists") {
+      output.innerHTML =
+        "<div><strong>" + out.name + "</strong></div>" +
+        "<div>" + out.event + "</div>" +
+        "<div class='regn'>" + out.regnId + "</div>" +
+        "<div>You are already registered for this event.</div>";
+
+    } else {
+      throw new Error(out.message || "Registration failed");
+    }
+
+  } catch (err) {
+    loading.style.display = "none";
+    form.style.display = "block";
+    submitBtn.disabled = false;
+
+    errorBox.innerText =
+      "Something went wrong. Please try again or contact the desk.";
+    errorBox.style.display = "block";
+  }
 };
 </script>
 
