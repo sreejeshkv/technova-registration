@@ -54,6 +54,7 @@
       font-size: 26px;
       font-weight: bold;
       margin-top: 10px;
+      letter-spacing: 1px;
     }
 
     .error {
@@ -107,64 +108,67 @@
 <div id="error" class="error" style="display:none;"></div>
 
 <script>
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
+  const SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
 
-const form = document.getElementById("form");
-const loading = document.getElementById("loading");
-const output = document.getElementById("output");
-const errorBox = document.getElementById("error");
-const submitBtn = document.getElementById("submitBtn");
+  const form = document.getElementById("form");
+  const loading = document.getElementById("loading");
+  const output = document.getElementById("output");
+  const errorBox = document.getElementById("error");
+  const submitBtn = document.getElementById("submitBtn");
 
-form.onsubmit = async e => {
-  e.preventDefault();
+  form.onsubmit = async e => {
+    e.preventDefault();
 
-  errorBox.style.display = "none";
-  form.style.display = "none";
-  loading.style.display = "block";
-  submitBtn.disabled = true;
+    errorBox.style.display = "none";
+    form.style.display = "none";
+    loading.style.display = "block";
+    submitBtn.disabled = true;
 
-  const data = Object.fromEntries(new FormData(form).entries());
+    const data = Object.fromEntries(new FormData(form).entries());
+    const params = new URLSearchParams(data);
 
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
-    });
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: params
+      });
 
-    const out = await res.json();
-    loading.style.display = "none";
-    output.style.display = "block";
+      const out = await res.json();
 
-    if (out.status === "new") {
-      output.innerHTML =
-        "<div><strong>" + out.name + "</strong></div>" +
-        "<div>" + out.event + "</div>" +
-        "<div class='regn'>" + out.regnId + "</div>" +
-        "<div>Please show this Registration ID at the desk.</div>";
+      loading.style.display = "none";
+      output.style.display = "block";
 
-    } else if (out.status === "exists") {
-      output.innerHTML =
-        "<div><strong>" + out.name + "</strong></div>" +
-        "<div>" + out.event + "</div>" +
-        "<div class='regn'>" + out.regnId + "</div>" +
-        "<div>You are already registered for this event.</div>";
+      if (out.status === "new") {
+        output.innerHTML =
+          "<div><strong>" + out.name + "</strong></div>" +
+          "<div>" + out.event + "</div>" +
+          "<div class='regn'>" + out.regnId + "</div>" +
+          "<div>Please show this Registration ID at the desk.</div>";
 
-    } else {
-      throw new Error(out.message || "Registration failed");
+      } else if (out.status === "exists") {
+        output.innerHTML =
+          "<div><strong>" + out.name + "</strong></div>" +
+          "<div>" + out.event + "</div>" +
+          "<div class='regn'>" + out.regnId + "</div>" +
+          "<div>You are already registered for this event.</div>";
+
+      } else {
+        throw new Error(out.message || "Registration failed");
+      }
+
+    } catch (err) {
+      loading.style.display = "none";
+      form.style.display = "block";
+      submitBtn.disabled = false;
+
+      errorBox.innerText =
+        "Something went wrong. Please contact the registration desk.";
+      errorBox.style.display = "block";
+
+      console.error(err);
     }
-
-  } catch (err) {
-    loading.style.display = "none";
-    form.style.display = "block";
-    submitBtn.disabled = false;
-
-    errorBox.innerText =
-      "Something went wrong. Please try again or contact the desk.";
-    errorBox.style.display = "block";
-  }
-};
+  };
 </script>
 
 </body>
