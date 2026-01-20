@@ -3,6 +3,7 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Technova 2.0: Event-day Registration</title>
+<div id="todayDate" style="text-align:center; font-weight:bold; margin-bottom:20px;"></div>
 
   <style>
     body {
@@ -68,7 +69,7 @@
 
 <body>
 
-<h2>Technova Registration</h2>
+<h2>Technova 2.0: Event-day Registration</h2>
 
 <form id="form">
   <input name="name" placeholder="Name of Participant" required>
@@ -116,9 +117,27 @@
 <div id="error" class="error" style="display:none;"></div>
 
 <script>
+  
+  (function showTodayDate() {
+  const dateDiv = document.getElementById("todayDate");
+
+  const today = new Date();
+  const formatted = today.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  dateDiv.textContent = "Date: " + formatted;
+})();
+
+  
+  
   const SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
 
+
+  
   const form = document.getElementById("form");
   const loading = document.getElementById("loading");
   const output = document.getElementById("output");
