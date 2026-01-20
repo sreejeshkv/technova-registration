@@ -118,18 +118,18 @@
 
 <script>
   
-  (function showTodayDate() {
-  const dateDiv = document.getElementById("todayDate");
+document.addEventListener("DOMContentLoaded", () => {
+    const dateDiv = document.getElementById("todayDate");
 
-  const today = new Date();
-  const formatted = today.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
+    const today = new Date();
+    const formatted = today.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+
+    dateDiv.textContent = "Date: " + formatted;
   });
-
-  dateDiv.textContent = "Date: " + formatted;
-})();
 
   
   
