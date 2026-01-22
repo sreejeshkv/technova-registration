@@ -93,41 +93,46 @@
     <option value="college">College / Diploma</option>
   </select>
 
-  <input name="name" placeholder="Name of Participant" required>
+  <!-- All other fields (hidden initially) -->
+  <div id="detailsSection" style="display:none;">
 
-  <input
-    name="mobile"
-    placeholder="Mobile Number"
-    pattern="[0-9]{10}"
-    inputmode="numeric"
-    title="Enter a valid 10-digit mobile number"
-    required
-  >
+    <input name="name" placeholder="Name of Participant" required>
 
-  <input name="email" type="email" placeholder="Email ID" required>
+    <input
+      name="mobile"
+      placeholder="Mobile Number"
+      pattern="[0-9]{10}"
+      inputmode="numeric"
+      title="Enter a valid 10-digit mobile number"
+      required
+    >
 
-  <!-- Class / Year -->
-  <div id="classYearWrapper"></div>
+    <input name="email" type="email" placeholder="Email ID" required>
 
-  <!-- Course -->
-  <div id="courseWrapper" style="display:none;">
-    <input name="course" id="courseInput" placeholder="Course Name">
+    <!-- Class / Year -->
+    <div id="classYearWrapper"></div>
+
+    <!-- Course -->
+    <div id="courseWrapper" style="display:none;">
+      <input name="course" id="courseInput" placeholder="Course Name">
+    </div>
+
+    <!-- College / School -->
+    <input
+      name="college"
+      id="collegeInput"
+      placeholder="College / School Name"
+      required
+    >
+
+    <!-- Event -->
+    <select name="event" id="eventSelect" required>
+      <option value="">Select Event</option>
+    </select>
+
+    <button id="submitBtn" type="submit">Generate Registration ID</button>
+
   </div>
-
-  <!-- College / School -->
-  <input
-    name="college"
-    id="collegeInput"
-    placeholder="College / School Name"
-    required
-  >
-
-  <!-- Event -->
-  <select name="event" id="eventSelect" required>
-    <option value="">Select Event</option>
-  </select>
-
-  <button id="submitBtn" type="submit">Generate Registration ID</button>
 </form>
 
 <div id="loading" class="loading" style="display:none;">
@@ -139,7 +144,7 @@
 <div id="error" class="error" style="display:none;"></div>
 
 <script>
-  /* ================= CONFIG ================= */
+  /* ========= CONFIG ========= */
   const EVENT_DAY = 1; // CHANGE TO 2 ON DAY 2
 
   const SCRIPT_URL =
@@ -164,11 +169,10 @@
     { name: "TATVA-The Quiz Contest", type: "college", day: 2 },
     { name: "TechnoBOTS-Robotic Contest for School students", type: "school", day: 2 }
   ];
-  /* ========================================== */
+  /* ========================== */
 
   document.addEventListener("DOMContentLoaded", () => {
-    const dateDiv = document.getElementById("todayDate");
-    dateDiv.textContent =
+    document.getElementById("todayDate").textContent =
       "Date: " + new Date().toLocaleDateString("en-IN", {
         day: "numeric",
         month: "long",
@@ -177,6 +181,7 @@
   });
 
   const participantType = document.getElementById("participantType");
+  const detailsSection = document.getElementById("detailsSection");
   const classYearWrapper = document.getElementById("classYearWrapper");
   const courseWrapper = document.getElementById("courseWrapper");
   const collegeInput = document.getElementById("collegeInput");
@@ -185,7 +190,13 @@
   participantType.addEventListener("change", () => {
     const type = participantType.value;
 
-    // Class / Year field
+    if (!type) {
+      detailsSection.style.display = "none";
+      return;
+    }
+
+    detailsSection.style.display = "block";
+
     if (type === "school") {
       classYearWrapper.innerHTML =
         '<input name="classYear" placeholder="Class" required>';
@@ -207,7 +218,6 @@
       collegeInput.placeholder = "College Name";
     }
 
-    // Populate events
     eventSelect.innerHTML = '<option value="">Select Event</option>';
     EVENTS.forEach(ev => {
       if (ev.type === type && ev.day === EVENT_DAY) {
@@ -233,8 +243,9 @@
     loading.style.display = "block";
     submitBtn.disabled = true;
 
-    const data = Object.fromEntries(new FormData(form).entries());
-    const params = new URLSearchParams(data);
+    const params = new URLSearchParams(
+      Object.fromEntries(new FormData(form).entries())
+    );
 
     try {
       const res = await fetch(SCRIPT_URL, { method: "POST", body: params });
@@ -249,7 +260,7 @@
         "<div class='regn'>" + out.regnId + "</div>" +
         "<div>Please show this Registration ID at the desk.</div>";
 
-    } catch (err) {
+    } catch {
       loading.style.display = "none";
       form.style.display = "block";
       submitBtn.disabled = false;
