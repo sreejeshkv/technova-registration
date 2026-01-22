@@ -288,6 +288,15 @@
       errorBox.style.display = "block";
     }
   };
+
+  window.addEventListener("load", () => {
+  const form = document.getElementById("form");
+  form.reset();
+
+  document.getElementById("participantType").value = "";
+  document.getElementById("detailsSection").style.display = "none";
+});
+
 </script>
 
 </body>
