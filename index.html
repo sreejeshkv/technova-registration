@@ -4,7 +4,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Technova 2.0: Event-day Registration</title>
 
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,7 +14,7 @@
 
     h2 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     input, select, button {
@@ -43,6 +42,20 @@
       font-weight: bold;
     }
 
+    .spinner {
+      margin: 0 auto 10px;
+      width: 32px;
+      height: 32px;
+      border: 4px solid #ddd;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .result {
       margin-top: 20px;
       padding: 15px;
@@ -55,7 +68,6 @@
       font-size: 26px;
       font-weight: bold;
       margin-top: 10px;
-      letter-spacing: 1px;
     }
 
     .error {
@@ -64,24 +76,6 @@
       margin-top: 15px;
       text-align: center;
     }
-
-    .spinner {
-  margin: 0 auto 10px;
-  width: 32px;
-  height: 32px;
-  border: 4px solid #ddd;
-  border-top: 4px solid #1a73e8;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-    
   </style>
 </head>
 
@@ -89,47 +83,55 @@
 
 <h2>Technova 2.0: Event-day Registration</h2>
 <div id="todayDate" style="text-align:center; font-weight:bold; margin-bottom:20px;"></div>
+
 <form id="form">
+
+  <!-- Participant Type -->
+  <select id="participantType" required>
+    <option value="">Select Participant Type</option>
+    <option value="school">School / Higher Secondary</option>
+    <option value="college">College / Diploma</option>
+  </select>
+
   <input name="name" placeholder="Name of Participant" required>
-<input
-  name="mobile"
-  placeholder="Mobile Number"
-  pattern="[0-9]{10}"
-  inputmode="numeric"
-  title="Enter a valid 10-digit mobile number"
-  required
->
+
+  <input
+    name="mobile"
+    placeholder="Mobile Number"
+    pattern="[0-9]{10}"
+    inputmode="numeric"
+    title="Enter a valid 10-digit mobile number"
+    required
+  >
 
   <input name="email" type="email" placeholder="Email ID" required>
-  <input name="classYear" placeholder="Class / Year of Study" required>
-  <input name="course" placeholder="Course Name (Blank for school students)">
-  <input name="college" placeholder="College / School Name" required>
 
-  <select name="event" required>
+  <!-- Class / Year -->
+  <div id="classYearWrapper"></div>
+
+  <!-- Course -->
+  <div id="courseWrapper" style="display:none;">
+    <input name="course" id="courseInput" placeholder="Course Name">
+  </div>
+
+  <!-- College / School -->
+  <input
+    name="college"
+    id="collegeInput"
+    placeholder="College / School Name"
+    required
+  >
+
+  <!-- Event -->
+  <select name="event" id="eventSelect" required>
     <option value="">Select Event</option>
-
-    <option value="BioQUEST-Test your Health Wisdom">BioQUEST – Test your Health Wisdom</option>
-    <option value="BossBattle-Best Manager Contest">BossBattle – Best Manager Contest</option>
-    <option value="CodeCLASH-C Coding Contest">CodeCLASH – C Coding Contest</option>
-    <option value="CrackIT-Find a Hidden Key inside a Code">CrackIT – Find a Hidden Key inside a Code</option>
-    <option value="ElectroX-Circuit Making Contest">ElectroX – Circuit Making Contest</option>
-    <option value="IDEATHON-Startup Idea Presentation Contest">IDEATHON – Startup Idea Presentation Contest</option>
-    <option value="PRESENTA-Seminar Contest">PRESENTA – Seminar Contest</option>
-    <option value="PRESSCom-Press Conference Imitation Contest">PRESSCom – Press Conference Imitation Contest</option>
-    <option value="PRAYOGA-The Project Demo Contest">PRAYOGA – The Project Demo Contest</option>
-    <option value="Robo WAR-Robot Demo Contest">Robo WAR – Robot Demo Contest</option>
-    <option value="Sci-WIZ-Science Quiz for School students">Sci-WIZ – Science Quiz for School Students</option>
-    <option value="TATVA-The Quiz Contest">TATVA – The Quiz Contest</option>
-    <option value="Tech-Snap-Short Time Tech Talk for School students">Tech-Snap – Short Time Tech Talk for School Students</option>
-    <option value="TechnoBOTS-Robotic Contest for School students">TechnoBOTS – Robotic Contest for School Students</option>
   </select>
 
   <button id="submitBtn" type="submit">Generate Registration ID</button>
 </form>
 
 <div id="loading" class="loading" style="display:none;">
-    <div class="spinner"></div>
-
+  <div class="spinner"></div>
   Generating Registration ID…
 </div>
 
@@ -137,27 +139,86 @@
 <div id="error" class="error" style="display:none;"></div>
 
 <script>
-  
-document.addEventListener("DOMContentLoaded", () => {
-    const dateDiv = document.getElementById("todayDate");
+  /* ================= CONFIG ================= */
+  const EVENT_DAY = 1; // CHANGE TO 2 ON DAY 2
 
-    const today = new Date();
-    const formatted = today.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-
-    dateDiv.textContent = "Date: " + formatted;
-  });
-
-  
-  
   const SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbzq1F5Smb-XAtLPj8dF-iO0zcETudZ51zgW_k9TxIb8D-US008KFgN-OaTj7Wzf2Am5yg/exec";
 
+  const EVENTS = [
+    // Day 1
+    { name: "PRAYOGA-The Project Demo Contest", type: "college", day: 1 },
+    { name: "BossBattle-Best Manager Contest", type: "college", day: 1 },
+    { name: "IDEATHON-Startup Idea Presentation Contest", type: "college", day: 1 },
+    { name: "Sci-WIZ-Science Quiz for School students", type: "school", day: 1 },
+    { name: "Tech-Snap-Short Time Tech Talk for School students", type: "school", day: 1 },
 
-  
+    // Day 2
+    { name: "Robo WAR-Robot Demo Contest", type: "college", day: 2 },
+    { name: "CodeCLASH-C Coding Contest", type: "college", day: 2 },
+    { name: "ElectroX-Circuit Making Contest", type: "college", day: 2 },
+    { name: "PRESENTA-Seminar Contest", type: "college", day: 2 },
+    { name: "PRESSCom-Press Conference Imitation Contest", type: "college", day: 2 },
+    { name: "CrackIT-Find a Hidden Key inside a Code", type: "college", day: 2 },
+    { name: "BioQUEST-Test your Health Wisdom", type: "college", day: 2 },
+    { name: "TATVA-The Quiz Contest", type: "college", day: 2 },
+    { name: "TechnoBOTS-Robotic Contest for School students", type: "school", day: 2 }
+  ];
+  /* ========================================== */
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const dateDiv = document.getElementById("todayDate");
+    dateDiv.textContent =
+      "Date: " + new Date().toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+  });
+
+  const participantType = document.getElementById("participantType");
+  const classYearWrapper = document.getElementById("classYearWrapper");
+  const courseWrapper = document.getElementById("courseWrapper");
+  const collegeInput = document.getElementById("collegeInput");
+  const eventSelect = document.getElementById("eventSelect");
+
+  participantType.addEventListener("change", () => {
+    const type = participantType.value;
+
+    // Class / Year field
+    if (type === "school") {
+      classYearWrapper.innerHTML =
+        '<input name="classYear" placeholder="Class" required>';
+      courseWrapper.style.display = "none";
+      document.getElementById("courseInput").value = "";
+      collegeInput.placeholder = "School Name";
+    }
+
+    if (type === "college") {
+      classYearWrapper.innerHTML =
+        '<select name="classYear" required>' +
+        '<option value="">Select Year of Study</option>' +
+        '<option value="1st Year">1st Year</option>' +
+        '<option value="2nd Year">2nd Year</option>' +
+        '<option value="3rd Year">3rd Year</option>' +
+        '<option value="4th Year">4th Year</option>' +
+        '</select>';
+      courseWrapper.style.display = "block";
+      collegeInput.placeholder = "College Name";
+    }
+
+    // Populate events
+    eventSelect.innerHTML = '<option value="">Select Event</option>';
+    EVENTS.forEach(ev => {
+      if (ev.type === type && ev.day === EVENT_DAY) {
+        const opt = document.createElement("option");
+        opt.value = ev.name;
+        opt.textContent = ev.name.replace(/-/g, " – ");
+        eventSelect.appendChild(opt);
+      }
+    });
+  });
+
   const form = document.getElementById("form");
   const loading = document.getElementById("loading");
   const output = document.getElementById("output");
@@ -176,44 +237,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(data);
 
     try {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: params
-      });
-
+      const res = await fetch(SCRIPT_URL, { method: "POST", body: params });
       const out = await res.json();
 
       loading.style.display = "none";
       output.style.display = "block";
 
-      if (out.status === "new") {
-        output.innerHTML =
-          "<div><strong>" + out.name + "</strong></div>" +
-          "<div>" + out.event + "</div>" +
-          "<div class='regn'>" + out.regnId + "</div>" +
-          "<div>Please show this Registration ID at the desk.</div>";
-
-      } else if (out.status === "exists") {
-        output.innerHTML =
-          "<div><strong>" + out.name + "</strong></div>" +
-          "<div>" + out.event + "</div>" +
-          "<div class='regn'>" + out.regnId + "</div>" +
-          "<div>You are already registered for this event.</div>";
-
-      } else {
-        throw new Error(out.message || "Registration failed");
-      }
+      output.innerHTML =
+        "<div><strong>" + out.name + "</strong></div>" +
+        "<div>" + out.event + "</div>" +
+        "<div class='regn'>" + out.regnId + "</div>" +
+        "<div>Please show this Registration ID at the desk.</div>";
 
     } catch (err) {
       loading.style.display = "none";
       form.style.display = "block";
       submitBtn.disabled = false;
-
-      errorBox.innerText =
+      errorBox.textContent =
         "Something went wrong. Please contact the registration desk.";
       errorBox.style.display = "block";
-
-      console.error(err);
     }
   };
 </script>
