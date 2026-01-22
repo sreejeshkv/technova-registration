@@ -82,24 +82,26 @@
 <body>
 
 <h2>Technova 2.0: Event-day Registration</h2>
-<div id="todayDate" style="text-align:center; font-weight:bold; margin-bottom:20px;"></div>
+<div id="todayDate" style="text-align:center; font-weight:bold; margin-bottom:15px;"></div>
 
 <form id="form">
-<div style="text-align:left; font-weight:bold; margin-bottom:10px;">
-  Select your student type(School/College) to continue:
-</div>
 
-  <!-- Participant Type -->
+  <!-- Instruction -->
+  <div style="text-align:center; font-weight:bold; margin-bottom:10px;">
+    Select your student type to continue
+  </div>
+
+  <!-- Student Type -->
   <select id="participantType" required>
-    <option value="">Select Participant Type</option>
+    <option value="">Select Student Type</option>
     <option value="school">School / Higher Secondary</option>
     <option value="college">College / Diploma</option>
   </select>
 
-  <!-- All other fields (hidden initially) -->
+  <!-- Hidden until type selected -->
   <div id="detailsSection" style="display:none;">
 
-    <input name="name" placeholder="Name of Participant" required>
+    <input name="name" placeholder="Name of Student" required>
 
     <input
       name="mobile"
@@ -192,19 +194,24 @@
 
   participantType.addEventListener("change", () => {
     const type = participantType.value;
+    const form = document.getElementById("form");
 
-    if (!type) {
-      detailsSection.style.display = "none";
-      return;
-    }
+    // Reset everything except student type
+    form.reset();
+    participantType.value = type;
+
+    detailsSection.style.display = "none";
+    classYearWrapper.innerHTML = "";
+    courseWrapper.style.display = "none";
+    eventSelect.innerHTML = '<option value="">Select Event</option>';
+
+    if (!type) return;
 
     detailsSection.style.display = "block";
 
     if (type === "school") {
       classYearWrapper.innerHTML =
         '<input name="classYear" placeholder="Class" required>';
-      courseWrapper.style.display = "none";
-      document.getElementById("courseInput").value = "";
       collegeInput.placeholder = "School Name";
     }
 
@@ -221,7 +228,6 @@
       collegeInput.placeholder = "College Name";
     }
 
-    eventSelect.innerHTML = '<option value="">Select Event</option>';
     EVENTS.forEach(ev => {
       if (ev.type === type && ev.day === EVENT_DAY) {
         const opt = document.createElement("option");
@@ -230,6 +236,16 @@
         eventSelect.appendChild(opt);
       }
     });
+  });
+
+  // Clear cached form on back navigation
+  window.addEventListener("pageshow", e => {
+    if (e.persisted) {
+      const form = document.getElementById("form");
+      form.reset();
+      participantType.value = "";
+      detailsSection.style.display = "none";
+    }
   });
 
   const form = document.getElementById("form");
